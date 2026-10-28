@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: airouter
+  profiles:
+    active: local
+server:
+  port: 8123
+  servlet:
+    context-path: /api
