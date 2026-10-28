@@ -32,7 +32,7 @@ mybatis-flex:
 springdoc:
   group-configs:
     - group: 'default'
-      packages-to-scan: com.yupi.airouter.controller
+      packages-to-scan: com.example.airouter.controller
 # knife4j
 knife4j:
   enable: true
