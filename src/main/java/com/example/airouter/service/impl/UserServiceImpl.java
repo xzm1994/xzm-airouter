@@ -1,5 +1,6 @@
 package com.example.airouter.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.airouter.exception.BusinessException;
 import com.example.airouter.exception.ErrorCode;
@@ -13,12 +14,14 @@ import com.mybatisflex.core.BaseMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
 
 import static com.example.airouter.constant.UserConstant.USER_LOGIN_STATE;
 
+@Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -26,10 +29,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号长度过短");
         }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
+        if (userPassword.length() < 5 || checkPassword.length() < 5) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短");
         }
         if (!userPassword.equals(checkPassword)) {
@@ -64,10 +67,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StrUtil.hasBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < 3) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号长度过短");
         }
-        if (userPassword.length() < 8) {
+        if (userPassword.length() < 5) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短");
         }
         // 2. 加密
@@ -94,7 +97,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LoginUserVO getLoginUserVO(User user) {
-        return null;
+        if (user == null) {
+            return null;
+        }
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtil.copyProperties(user, loginUserVO);
+        return loginUserVO;
     }
 
     @Override
