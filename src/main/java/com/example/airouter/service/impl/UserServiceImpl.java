@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static com.example.airouter.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -92,7 +93,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User getLoginUser(HttpServletRequest request) {
-        return null;
+        // 先判断用户是否登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 从数据库查询当前用户信息
+        long userId = currentUser.getId();
+        currentUser = this.getById(userId);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return currentUser;
     }
 
     @Override
@@ -107,7 +120,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean userLogout(HttpServletRequest request) {
-        return false;
+        // 先判断用户是否登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (Objects.isNull(userObj)) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return true;
     }
 
     @Override
