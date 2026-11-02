@@ -1,0 +1,10 @@
+spring:
+  ai:
+    openai:
+      # 通义千问兼容 OpenAI 接口
+      base-url: https://llm-844yqzh0z4xfat6t.cn-beijing.maas.aliyuncs.com/compatible-mode
+      api-key: sk-ws-H.YHXIILY.ce6y.MEYCIQD6qL0EK6Q9WS0uYEP9lU6G31uT3_7TWiWcHeyGEwsS9wIhAK1hfHZ8NxN281GekQle-ytwMvzTAJjArOMqBQh9zcog
+      chat:
+        options:
+          model: qwen-plus
+          temperature: 0.7

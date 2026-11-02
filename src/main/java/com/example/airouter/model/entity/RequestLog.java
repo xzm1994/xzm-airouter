@@ -1,0 +1,161 @@
+package com.example.airouter.model.entity;
+
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table("request_log")
+public class RequestLog implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.snowFlakeId)
+    private Long id;
+
+    /**
+     * 链路追踪ID
+     */
+    @Column("traceId")
+    private String  traceId;
+
+    /**
+     * 用户id
+     */
+    @Column("userId")
+    private Long userId;
+
+    /**
+     * API KEY ID
+     */
+    @Column("apiKeyId")
+    private String apiKeyId;
+
+    /**
+     * 时机调用的模型id
+     */
+    @Column("modelId")
+    private Long modelId;
+
+    /**
+     * 请求的模型表示
+     */
+    @Column("requestModel")
+    private String requestModel;
+
+    /**
+     * 使用的模型名称
+     */
+    @Column("modelName")
+    private String modelName;
+
+    /**
+     * 请求类型： chat/embedding/image
+     */
+    @Column("requestType")
+    private String requestType;
+
+    /**
+     * 调用来源： web/api
+     */
+    @Column("source")
+    private String source;
+
+    /**
+     * 输入token数
+     */
+    @Column("promptTokens")
+    private Integer promptTokens;
+
+    /**
+     * 输出token数
+     */
+    @Column("completionTokens")
+    private Integer completionTokens;
+
+    /**
+     * 总token数
+     */
+    @Column("totalTokens")
+    private Integer totalTokens;
+
+    /**
+     * 本次请求费用（元）
+     */
+    @Column("cost")
+    private BigDecimal cost;
+
+    /**
+     * 请求耗时（毫秒）
+     */
+    @Column("duration")
+    private Integer duration;
+
+    /**
+     * 状态： success/failed
+     */
+    @Column("status")
+    private String status;
+
+    /**
+     * 错误信息
+     */
+    @Column("errorMessage")
+    private String errorMessage;
+
+    /**
+     * 错误码
+     */
+    @Column("errorCode")
+    private String errorCode;
+
+    /**
+     * 使用的路由策略
+     */
+    @Column("routingStrategy")
+    private String routingStrategy;
+
+    /**
+     * 是否为fallback请求
+     */
+    @Column("isFallback")
+    private Integer isFallback;
+
+    /**
+     * 客户端ip
+     */
+    @Column("clientIp")
+    private String clientIp;
+
+    /**
+     * user-agent
+     */
+    @Column("userAgent")
+    private String userAgent;
+
+    /**
+     * 创建时间
+     */
+    @Column("createTime")
+    private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    @Column("updateTime")
+    private LocalDateTime updateTime;
+}

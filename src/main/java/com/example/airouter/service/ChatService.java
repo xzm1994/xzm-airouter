@@ -14,11 +14,9 @@ public interface ChatService {
      * @param chatRequest 聊天请求
      * @param userId      用户ID
      * @param apiKeyId    API Key ID
-     * @param clientIp    客户端IP
-     * @param userAgent   User-Agent
      * @return 聊天响应
      */
-    ChatResponse chat(ChatRequest chatRequest, Long userId, Long apiKeyId, String clientIp, String userAgent);
+    ChatResponse chat(ChatRequest chatRequest, Long userId, Long apiKeyId);
 
     /**
      * 流式聊天
