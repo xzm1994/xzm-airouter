@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -101,22 +102,21 @@ public class ChatServiceImpl implements ChatService {
         String modelName = chatRequest.getModel();
         long startTime = System.currentTimeMillis();
 
-        // Token 计数器
+        // Token 计数器和上次内容
         final int[] promptTokens = {0};
         final int[] completionTokens = {0};
 
         try {
-            // 1. 构建 Prompt
+            // 构建 Prompt
             Prompt prompt = buildPrompt(chatRequest);
 
-            // 2. 调用流式 AI 模型
+            // 调用流式 AI 模型
             ChatClient chatClient = ChatClient.builder(chatModel).build();
             Flux<org.springframework.ai.chat.model.ChatResponse> flux = chatClient
                     .prompt(prompt)
                     .stream()
                     .chatResponse();
 
-            // 3. 处理流式响应
             return flux.flatMap(response -> {
                 // 获取 Token 信息（通常只有最后一个 chunk 才有）
                 if (response.getMetadata().getUsage() != null) {
@@ -131,17 +131,22 @@ public class ChatServiceImpl implements ChatService {
                     }
                 }
 
-                // 检查是否有内容（最后一个 chunk 只有 token 信息，没有内容）
+                // 检查 result 是否为 null（最后一个 chunk 只有 token 信息，没有内容）
                 if (ObjectUtils.isEmpty(response.getResult()) || ObjectUtils.isEmpty(response.getResult().getOutput())) {
+                    // 跳过没有内容的 chunk
                     return Flux.empty();
                 }
-
-                // 将文本中的换行符转义为 \\n，避免与 SSE 格式冲突
                 String text = response.getResult().getOutput().getText();
-                String escapedText = text.replace("\n", "\\n");
+                // ✅ 重点修复：null 安全处理，null -> 空字符串
+                String content = Optional.ofNullable(text).orElse("");
+                String escapedText = content.replace("\n", "\\n");
+                // 如果是空文本，也跳过，避免推送空消息
+                if (escapedText.isBlank()) {
+                    return Flux.empty();
+                }
                 return Flux.just(escapedText + "\n\n");
             }).doOnComplete(() -> {
-                // 4. 流结束时记录日志
+                // 流结束时记录日志
                 long duration = System.currentTimeMillis() - startTime;
                 int totalTokens = promptTokens[0] + completionTokens[0];
 
@@ -149,7 +154,7 @@ public class ChatServiceImpl implements ChatService {
                         promptTokens[0], completionTokens[0], totalTokens,
                         (int) duration, "success", null);
             }).doOnError(error -> {
-                // 5. 流错误时记录日志
+                // 流错误时记录日志
                 log.error("流式调用模型失败", error);
                 long duration = System.currentTimeMillis() - startTime;
                 requestLogService.logRequest(userId, apiKeyId, modelName, 0, 0, 0,
