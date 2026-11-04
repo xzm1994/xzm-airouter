@@ -29,6 +29,13 @@ public class ChatRequest implements Serializable {
     private Boolean stream = false;
 
     /**
+     * 是否启用深度思考
+     * 仅部分模型支持
+     */
+    @JsonProperty("enable_reasoning")
+    private Boolean enableReasoning;
+
+    /**
      * 温度参数（0-1）
      */
     private Double temperature;

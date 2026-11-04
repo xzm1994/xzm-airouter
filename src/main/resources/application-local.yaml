@@ -3,7 +3,7 @@ spring:
     openai:
       # 通义千问兼容 OpenAI 接口
       base-url: https://llm-844yqzh0z4xfat6t.cn-beijing.maas.aliyuncs.com/compatible-mode
-      api-key:
+      api-key: sk-ws-H.YLEHMDI.9iOv.MEYCIQCfEn0rA7c0nnDWFVHpQ5-njn5fMUVlwX_sDnSow506eQIhAJ4O27L3wEHkGn7yVFSXYupjR6nS5G8cbJfX7tDzsI_3
       chat:
         options:
           model: qwen-plus
