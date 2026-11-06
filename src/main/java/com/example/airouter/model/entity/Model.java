@@ -75,8 +75,8 @@ public class Model {
     /**
      * 平均延迟（毫秒）
      */
-    @Column("avaLatency")
-    private Integer avaLatency;
+    @Column("avgLatency")
+    private Integer avgLatency;
     /**
      * 成功率（百分比）
      */

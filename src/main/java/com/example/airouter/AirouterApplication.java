@@ -6,6 +6,7 @@ import org.springframework.ai.model.deepseek.autoconfigure.DeepSeekChatAutoConfi
 import org.springframework.ai.model.openai.autoconfigure.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = {
         // 排除Openai自动配置
@@ -28,6 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         DashScopeVideoAutoConfiguration.class
 })
 @MapperScan("com.example.airouter.mapper")
+@EnableScheduling
 public class AirouterApplication {
 
     public static void main(String[] args) {
