@@ -1,8 +1,11 @@
 package com.example.airouter.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.example.airouter.mapper.RequestLogMapper;
+import com.example.airouter.model.dto.requestlog.RequestLogDTO;
 import com.example.airouter.model.entity.RequestLog;
 import com.example.airouter.service.ApiKeyService;
+import com.example.airouter.service.BillingService;
 import com.example.airouter.service.RequestLogService;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
@@ -20,6 +23,47 @@ public class RequestLogServiceImpl extends ServiceImpl<RequestLogMapper, Request
     @Resource
     private ApiKeyService apiKeyService;
 
+    @Resource
+    private BillingService billingService;
+
+    @Override
+    public void logRequest(RequestLogDTO logDTO) {
+        if (logDTO == null) {
+            return;
+        }
+        // 如果没有traceId，生成一个
+        if (logDTO.getTraceId() == null) {
+            logDTO.setTraceId(IdUtil.simpleUUID());
+        }
+        // todo 计算费用（如果没有提供费用，则自动计算）
+        BigDecimal cost = logDTO.getCost();
+        if (cost == null && logDTO.getModelId() != null && "success".equals(logDTO.getStatus())) {
+            int promptTokens = logDTO.getPromptTokens() != null ? logDTO.getPromptTokens() : 0;
+            int completionTokens = logDTO.getCompletionTokens() != null ? logDTO.getCompletionTokens() : 0;
+            cost = billingService.calculateCost(logDTO.getModelId(), promptTokens, completionTokens);
+        }
+        // 创建请求日志
+        RequestLog requestLog = RequestLog.builder().traceId(logDTO.getTraceId()).userId(logDTO.getUserId())
+                .apiKeyId(logDTO.getApiKeyId()).modelId(logDTO.getModelId())
+                .requestModel(logDTO.getRequestModel()).modelName(logDTO.getRequestModel()).requestType(logDTO.getRequestType())
+                .source(logDTO.getSource()).promptTokens(logDTO.getPromptTokens()).completionTokens(logDTO.getCompletionTokens())
+                .totalTokens(logDTO.getTotalTokens()).cost(cost).duration(logDTO.getDuration()).status(logDTO.getStatus())
+                .errorMessage(logDTO.getErrorMessage()).errorCode(logDTO.getErrorCode()).routingStrategy(logDTO.getRoutingStrategy())
+                .isFallback(logDTO.getIsFallback() != null && logDTO.getIsFallback() ? 1 : 0)
+                .clientIp(logDTO.getClientIp()).userAgent(logDTO.getUserAgent())
+                .createTime(LocalDateTime.now()).updateTime(LocalDateTime.now()).build();
+
+        // 保存日志
+        requestLogMapper.insert(requestLog);
+
+        // 更新 api key 的使用统计（仅成功的请求且有apikeyid）
+        if ("success".equals(logDTO.getStatus()) && logDTO.getApiKeyId() != null && logDTO.getTotalTokens() != null && logDTO.getTotalTokens() > 0) {
+            apiKeyService.updateUsageStats(logDTO.getApiKeyId(), logDTO.getTotalTokens());
+
+        }
+
+    }
+
     @Override
     public void logRequest(Long userId, Long apiKeyId, String modelName,
                            Integer promptTokens, Integer completionTokens,
@@ -27,7 +71,7 @@ public class RequestLogServiceImpl extends ServiceImpl<RequestLogMapper, Request
         // 创建请求日志
         RequestLog log = RequestLog.builder()
                 .userId(userId)
-                .apiKeyId(String.valueOf(apiKeyId))
+                .apiKeyId(apiKeyId)
                 .modelName(modelName)
                 .requestType("chat")
                 .source("web")

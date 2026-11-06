@@ -1,11 +1,19 @@
 package com.example.airouter.service;
 
+import com.example.airouter.model.dto.requestlog.RequestLogDTO;
 import com.example.airouter.model.entity.RequestLog;
 import com.mybatisflex.core.service.IService;
 
 import java.util.List;
 
 public interface RequestLogService extends IService<RequestLog> {
+
+    /**
+     * 记录请求日志
+     *
+     * @param logDTO 日志记录对象
+     */
+    void logRequest(RequestLogDTO logDTO);
 
     /**
      *  记录请求日志

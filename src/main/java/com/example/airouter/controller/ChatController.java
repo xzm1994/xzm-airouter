@@ -27,78 +27,78 @@ public class ChatController {
     private ApiKeyService  apiKeyService;
 
 
-    /**
-     * 非流式，同步返回json
-     */
-    @PostMapping(value = "/completions", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object chatCompletionsSync(@RequestBody ChatRequest request,
-                                      @RequestHeader(value = "Authorization", required = false)String authorization){
-        // 鉴权、校验逻辑和原来一样
-        // 1.验证 API key
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "缺少或无效的 Authorization Header");
-        }
-        String apiKeyValue = authorization.substring(7);
-        ApiKey apiKey = apiKeyService.getByKeyValue(apiKeyValue);
-        if (apiKey == null) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "API key无效或失效");
-        }
-        // 2. 参数校验
-        if (request.getMessages() == null || request.getMessages().isEmpty()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "messages 不能为空");
-        }
-        // 3. 设置默认模型
-        if (request.getModel() == null || request.getModel().isEmpty()) {
-            request.setModel("qwen-plus");
-        }
+//    /**
+//     * 非流式，同步返回json
+//     */
+//    @PostMapping(value = "/completions", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Object chatCompletionsSync(@RequestBody ChatRequest request,
+//                                      @RequestHeader(value = "Authorization", required = false)String authorization){
+//        // 鉴权、校验逻辑和原来一样
+//        // 1.验证 API key
+//        if (authorization == null || !authorization.startsWith("Bearer ")) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "缺少或无效的 Authorization Header");
+//        }
+//        String apiKeyValue = authorization.substring(7);
+//        ApiKey apiKey = apiKeyService.getByKeyValue(apiKeyValue);
+//        if (apiKey == null) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "API key无效或失效");
+//        }
+//        // 2. 参数校验
+//        if (request.getMessages() == null || request.getMessages().isEmpty()) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "messages 不能为空");
+//        }
+//        // 3. 设置默认模型
+//        if (request.getModel() == null || request.getModel().isEmpty()) {
+//            request.setModel("qwen-plus");
+//        }
+//
+//        // 强制 stream=false
+//        request.setStream(false);
+//        return chatService.chat(request, apiKey.getUserId(), apiKey.getId());
+//    }
 
-        // 强制 stream=false
-        request.setStream(false);
-        return chatService.chat(request, apiKey.getUserId(), apiKey.getId());
-    }
-
-    /**
-     * 流式SSE接口
-     */
-    @PostMapping(value = "/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatCompletionsStream(@RequestBody ChatRequest request,
-                                            @RequestHeader(value = "Authorization", required = false)String authorization){
-        // 鉴权、校验逻辑和原来一样
-        // 1.验证 API key
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "缺少或无效的 Authorization Header");
-        }
-        String apiKeyValue = authorization.substring(7);
-        ApiKey apiKey = apiKeyService.getByKeyValue(apiKeyValue);
-        if (apiKey == null) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "API key无效或失效");
-        }
-        // 2. 参数校验
-        if (request.getMessages() == null || request.getMessages().isEmpty()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "messages 不能为空");
-        }
-        // 3. 设置默认模型
-        if (request.getModel() == null || request.getModel().isEmpty()) {
-            request.setModel("qwen-plus");
-        }
-
-        // 鉴权、校验逻辑
-        request.setStream(true);
-        SseEmitter emitter = new SseEmitter(0L);
-        Flux<String> flux = chatService.chatStream(request, apiKey.getUserId(), apiKey.getId());
-        flux.subscribe(
-                data -> {
-                    try {
-                        emitter.send(SseEmitter.event().data(data));
-                    } catch (IOException e) {
-                        emitter.completeWithError(e);
-                    }
-                },
-                emitter::completeWithError,
-                emitter::complete
-        );
-        return emitter;
-    }
+//    /**
+//     * 流式SSE接口
+//     */
+//    @PostMapping(value = "/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//    public SseEmitter chatCompletionsStream(@RequestBody ChatRequest request,
+//                                            @RequestHeader(value = "Authorization", required = false)String authorization){
+//        // 鉴权、校验逻辑和原来一样
+//        // 1.验证 API key
+//        if (authorization == null || !authorization.startsWith("Bearer ")) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "缺少或无效的 Authorization Header");
+//        }
+//        String apiKeyValue = authorization.substring(7);
+//        ApiKey apiKey = apiKeyService.getByKeyValue(apiKeyValue);
+//        if (apiKey == null) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "API key无效或失效");
+//        }
+//        // 2. 参数校验
+//        if (request.getMessages() == null || request.getMessages().isEmpty()) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "messages 不能为空");
+//        }
+//        // 3. 设置默认模型
+//        if (request.getModel() == null || request.getModel().isEmpty()) {
+//            request.setModel("qwen-plus");
+//        }
+//
+//        // 鉴权、校验逻辑
+//        request.setStream(true);
+//        SseEmitter emitter = new SseEmitter(0L);
+//        Flux<String> flux = chatService.chatStream(request, apiKey.getUserId(), apiKey.getId());
+//        flux.subscribe(
+//                data -> {
+//                    try {
+//                        emitter.send(SseEmitter.event().data(data));
+//                    } catch (IOException e) {
+//                        emitter.completeWithError(e);
+//                    }
+//                },
+//                emitter::completeWithError,
+//                emitter::complete
+//        );
+//        return emitter;
+//    }
 
 
 //    @PostMapping(value = "/completions", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE})

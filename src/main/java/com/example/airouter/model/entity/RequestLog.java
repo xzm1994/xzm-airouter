@@ -43,7 +43,7 @@ public class RequestLog implements Serializable {
      * API KEY ID
      */
     @Column("apiKeyId")
-    private String apiKeyId;
+    private Long apiKeyId;
 
     /**
      * 时机调用的模型id

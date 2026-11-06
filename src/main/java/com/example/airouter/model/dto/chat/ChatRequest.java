@@ -45,4 +45,15 @@ public class ChatRequest implements Serializable {
      */
     @JsonProperty("max_tokens")
     private Integer maxTokens;
+
+    /**
+     * 路由策略类型
+     * auto: 自动路由（综合考虑成本、延迟、优先级）
+     * cost_first: 成本优先
+     * latency_first: 延迟优先
+     * fixed: 固定模型（使用指定的 model）
+     */
+    @JsonProperty("routing_strategy")
+    private String routingStrategy;
+
 }

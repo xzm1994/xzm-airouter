@@ -1,5 +1,6 @@
 package com.example.airouter.controller;
 
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import com.example.airouter.annotation.AuthCheck;
 import com.example.airouter.common.ResultUtils;
 import com.example.airouter.constant.UserConstant;
@@ -12,6 +13,7 @@ import com.example.airouter.model.entity.User;
 import com.example.airouter.service.ApiKeyService;
 import com.example.airouter.service.ChatService;
 import com.example.airouter.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +34,9 @@ public class InternalChatController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     /**
      * 内部聊天接口（使用 API Key ID）
@@ -68,16 +73,29 @@ public class InternalChatController {
         if (request.getModel() == null || request.getModel().isEmpty()) {
             request.setModel("qwen-plus");
         }
+        // 2. 获取客户端IP和User-Agent
+        String clientIp = JakartaServletUtil.getClientIP(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
 
         // 4. 判断是否为流式请求
         Boolean stream = request.getStream();
         if (stream != null && stream) {
-            // 流式响应
-            return chatService.chatStream(request, loginUser.getId(), apiKey.getId());
+            // 流式响应（网页端调用，不传 apiKeyId）- 转换为 SSE 格式
+            return chatService.chatStream(request, loginUser.getId(), null, clientIp, userAgent)
+                    .map(streamResponse -> {
+                        try {
+                            // 将 StreamResponse 转换为 JSON
+                            String json = objectMapper.writeValueAsString(streamResponse);
+                            return json + "\n\n";
+                        } catch (Exception e) {
+                            log.error("Failed to serialize stream response", e);
+                            return "";
+                        }
+                    });
         } else {
             // 非流式响应
-            ChatResponse response = chatService.chat(request, loginUser.getId(), apiKey.getId());
-            return ResultUtils.success(response);
+            return chatService.chat(request, apiKey.getUserId(), apiKey.getId(), clientIp, userAgent);
         }
     }
 }
